@@ -70,4 +70,8 @@ collections <- rbind(collections_1, collections_2, collections_3, collections_4)
 
 collections_clean <- collections %>% 
   filter(is.na(collection) == F) %>% 
-  mutate(archived.since = as.Date(parsedate::parse_date(archived.since)))
+  mutate(archived.since = format(as.Date(parsedate::parse_date(archived.since)), "%Y-%m")) 
+
+# write_json(collections_clean, "archive_it_JSON.json") 
+# this file is importable to OpenRefine!
+
