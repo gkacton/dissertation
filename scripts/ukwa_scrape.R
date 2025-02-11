@@ -1,3 +1,4 @@
+#### This script is no longer active -- UKWA provided their back-end metadata, which is in the `csv` file. 
 
 # libraries! --------------------------------------------------------------
 
