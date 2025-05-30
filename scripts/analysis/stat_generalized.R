@@ -5,13 +5,14 @@
 #   - subject = subject
 #   - geographic coverage = geographic
 #   - temporal coverage = temporal
+# Derived from Oksana Zavalina 'Contextual Metadata in Digital Aggregations' (2011)
 
 ### Converted to function
 
 library(tidyverse)
 library(tidyjson)
 
-generate_stats <- function(data, description_col, subject_col, geographic_col, temporal_col){
+zavalina_stats <- function(data, description_col, subject_col, geographic_col, temporal_col){
   # rename columns
   data_s <- data %>% 
     mutate(description = description_col,
@@ -48,10 +49,10 @@ generate_stats <- function(data, description_col, subject_col, geographic_col, t
   stats$prevalence[4] <- stats$occurences[4]/total
   
   # populate count of unique values
-  stats$unique[1] <- length(unique(data_s$description))
-  stats$unique[2] <- length(unique(data_s$subject))
-  stats$unique[3] <- length(unique(data_s$geographic))
-  stats$unique[4] <- length(unique(data_s$temporal))
+  stats$unique[1] <- nrow(data_s %>% filter(is.na(description) == F) %>% distinct(description))
+  stats$unique[2] <- nrow(data_s %>% filter(is.na(subject) == F) %>% distinct(subject))
+  stats$unique[3] <- nrow(data_s %>% filter(is.na(geographic) == F) %>% distinct(geographic))
+  stats$unique[4] <- nrow(data_s %>% filter(is.na(temporal) == F) %>% distinct(temporal))
   
   # populate unique percentages
   stats$pct_unique[1] <- stats$unique[1]/stats$occurences[1]
@@ -61,4 +62,103 @@ generate_stats <- function(data, description_col, subject_col, geographic_col, t
   
   return(stats)
 }
+
+
+# DC Compliance -----------------------------------------------------------
+
+# Script to evaluate compliance with the Dublin Core mandatory element set
+# INPUTS:
+  # data: df of metadata for archive
+  # colnames: list of length 15 with column titles crosswalked to each DC element 
+    ### MUST BE IN ORDER OF DC ELEMENTS BELOW
+#--------------------------
+ ### THE DC ELEMENTS:
+#   | Title           |
+#   | **Subject**     |
+#   | **Description** |
+#   | Type            |
+#   | Source          |
+#   | Relation        |
+#   | **Coverage**    |
+#   | Creator         |
+#   | Publisher       |
+#   | Contributor     |
+#   | Rights          |
+#   | **Date**        |
+#   | Format          |
+#   | Identifier      |
+#   | Language        |
+
+dc_stats <- function(data, dc_colnames) {
+  
+  # create list of DC elements
+  dc_elements <- c("title", 
+                   "subject", 
+                   "description",
+                   "type",
+                   "source",
+                   "relation",
+                   "coverage",
+                   "creator",
+                   "publisher",
+                   "contributor",
+                   "rights",
+                   "date",
+                   "format", 
+                   "identifier",
+                   "language")
+  
+  # generate empty DF to populate
+  stats <- as.data.frame(matrix(nrow = 15, ncol = 6))
+  
+  # name columns
+  colnames(stats) <- c("dc.field", "archive.field", "occurences", "prevalence", "unique", "pct_unique")
+  
+  if(length(dc_colnames) == 15){
+    for(i in 1:15){
+      stats$dc.field[i] <- dc_elements[i]
+      stats$archive.field[i] <- dc_colnames[i]
+      
+      # populate stats
+      stats$occurences[i] <- nrow(data %>% filter(.data[[dc_colnames[[i]]]] != ""))
+      stats$prevalence[i] <- stats$occurences[i]/nrow(data)
+      stats$unique[i] <- nrow(data %>% filter(is.na(.data[[dc_colnames[[i]]]]) == F) %>% distinct(.data[[dc_colnames[[i]]]]))
+      stats$pct_unique[i] <- stats$unique[i]/stats$occurences[i]
+    }
+  }
+  return(stats)
+}
+
+dc_stats(archive_it, c("collection.name", 
+                       "Subject",
+                       "Description",
+                       "Type",
+                       "Source",
+                       "Relation",
+                       "Coverage",
+                       "Creator",
+                       "Publisher",
+                       "Contributor",
+                       "Rights",
+                       "Archived.since",
+                       "Format",
+                       "Identifier",
+                       "Language"))
+
+### DEBUGGING
+dc_colnames <- c("collection.name", 
+                 "Subject",
+                 "Description",
+                 "Type",
+                 "Source",
+                 "Relation",
+                 "Coverage",
+                 "Creator",
+                 "Publisher",
+                 "Contributor",
+                 "Rights",
+                 "Archived.since",
+                 "Format",
+                 "Identifier",
+                 "Language")
 

@@ -1,14 +1,17 @@
 
 # low granularity analysis of metadata ------------------------------------
 
-# load function
+# load functions
 source("scripts/stat_generalized.R")
 library(tidyjson)
 
 # archive-level stats
 
+# comparison to Zavalina's categories -------------------------------------
+
+
 archive_it <- read.csv("data/csv/archive-it-C19WA.csv")
-archive_it_stats <- generate_stats(archive_it,
+archive_it_stats <- zavalina_stats(archive_it,
                description_col = archive_it$Description, 
                subject_col = archive_it$Subject, 
                geographic_col = archive_it$Coverage, 
@@ -16,39 +19,44 @@ archive_it_stats <- generate_stats(archive_it,
 
 ukwa <- read.csv("data/csv/UKWA_Covid19Collection.csv")
 ukwa <- ukwa %>% 
-  mutate(subject = NA,
-         geographic = NA)
-ukwa_stats <- generate_stats(ukwa,
+  mutate(x.col = NA)
+ukwa_stats <- zavalina_stats(ukwa,
                description_col = ukwa$Description, 
-               subject_col = ukwa$subject, 
-               geographic_col = ukwa$geographic, 
+               subject_col = ukwa$x.col, 
+               geographic_col = ukwa$x.col, 
                temporal_col = ukwa$Date.Created)
 
-disability <- read_json("data/json/dis_archive_JSON.json")
+### tidyjson method --> worse result than tidyjson 
+# disability <- read_json("data/json/dis_archive_JSON.json")
+# 
+# disability_parsed <- disability %>% 
+#   gather_array() %>% 
+#   spread_values(title = jstring(title),
+#                 description = jstring(summary),
+#                 date = jstring(date)) %>% 
+#   enter_object(categories) %>% 
+#   gather_array() %>% 
+#   spread_all() %>% 
+#   mutate(categories = ..JSON) %>% 
+#   as_tibble() %>% 
+#   select(-starts_with("array.index"),
+#          -document.id) %>% 
+#   mutate(geographic = NA)
 
-disability_parsed <- disability %>% 
-  gather_array() %>% 
-  spread_values(title = jstring(title),
-                description = jstring(summary),
-                date = jstring(date)) %>% 
-  enter_object(categories) %>% 
-  gather_array() %>% 
-  spread_all() %>% 
-  mutate(categories = ..JSON) %>% 
-  as_tibble() %>% 
-  select(-starts_with("array.index"),
-         -document.id) %>% 
-  mutate(geographic = NA)
+disability <- fromJSON("data/json/dis_archive_JSON.json") %>% 
+  mutate(x.col = NA)
 
-disability_stats <- generate_stats(disability_parsed,
-               disability_parsed$description,
-               disability_parsed$categories,
-               disability_parsed$geographic,
-               disability_parsed$date)
+disability_stats <- zavalina_stats(disability,
+               disability$summary,
+               disability$categories,
+               disability$x.col,
+               disability$date)
 
 massobvs <- read.csv("data/csv/MassObservation.csv")
+massobvs <- massobvs %>% 
+  mutate(x.col = NA)
 
-massobvs_stats <- generate_stats(massobvs,
+massobvs_stats <- zavalina_stats(massobvs,
                                  massobvs$Description,
                                  massobvs$Keywords,
                                  massobvs$County.Free.Text,
@@ -119,3 +127,106 @@ uniqueness_stats_combined <- rbind(ukwa_unique,
                         disability_unique,
                         massobvs_unique) %>% 
   select(archive, ends_with("description"), ends_with("subject"), ends_with("geographic"), ends_with("temporal"))
+
+
+# comparison to Dublin Core -----------------------------------------------
+
+archive_it_dc <- dc_stats(archive_it, c("collection.name", 
+                       "Subject",
+                       "Description",
+                       "Type",
+                       "Source",
+                       "Relation",
+                       "Coverage",
+                       "Creator",
+                       "Publisher",
+                       "Contributor",
+                       "Rights",
+                       "Archived.since",
+                       "Format",
+                       "Identifier",
+                       "Language"))
+# 
+# 
+ukwa_dc <- dc_stats(ukwa, c("Title.of.Target", 
+                           "x.col",
+                           "Description",
+                           "x.col",
+                           "Primary.Seed",
+                           "x.col",
+                           "x.col",
+                           "x.col",
+                           "x.col",
+                           "x.col",
+                           "x.col",
+                           "Updated",
+                           "x.col",
+                           "Record.ID",
+                           "x.col"))
+
+massobvs_dc <- dc_stats(massobvs, c("Title.of.Collection",
+                                    "Keywords",
+                                    "Description",
+                                    "Type.of.submission",
+                                    "P.id",
+                                    "x.col",
+                                    "x.col", 
+                                    "P.id",
+                                    "x.col",
+                                    "x.col",
+                                    "x.col",
+                                    "Date.Received",
+                                    "Response.Format",
+                                    "Archive.Ref",
+                                    "Language"))
+
+disability_dc <- dc_stats(disability, c("title",
+                                        "categories",
+                                        "summary",
+                                        "x.col",
+                                        "x.col",
+                                        "x.col",
+                                        "x.col",
+                                        "x.col",
+                                        "x.col",
+                                        "x.col",
+                                        "x.col",
+                                        "date",
+                                        "x.col",
+                                        "x.col",
+                                        "x.col"))
+
+# combine stats
+
+### PREVALENCE
+
+ukwa_dc_prev <- ukwa_dc %>% 
+  select(dc.field, prevalence) %>% 
+  pivot_wider(names_from = dc.field,
+              values_from = prevalence) %>% 
+  mutate(archive = "UKWA") 
+
+archive_it_dc_prev <- archive_it_dc %>% 
+  select(dc.field, prevalence) %>% 
+  pivot_wider(names_from = dc.field,
+              values_from = prevalence) %>% 
+  mutate(archive = "Archive-It") 
+
+disability_dc_prev <- disability_dc %>% 
+  select(dc.field, prevalence) %>% 
+  pivot_wider(names_from = dc.field,
+              values_from = prevalence) %>% 
+  mutate(archive = "Disability") 
+
+massobvs_dc_prev <- massobvs_dc %>% 
+  select(dc.field, prevalence) %>% 
+  pivot_wider(names_from = dc.field,
+              values_from = prevalence) %>% 
+  mutate(archive = "MassObservation") 
+
+dc_prevalence_stats <- rbind(ukwa_dc_prev, 
+                             archive_it_dc_prev,
+                             disability_dc_prev,
+                             massobvs_dc_prev
+                             )
+
