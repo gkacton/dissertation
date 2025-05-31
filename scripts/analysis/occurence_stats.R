@@ -2,8 +2,11 @@
 # low granularity analysis of metadata ------------------------------------
 
 # load functions
-source("scripts/stat_generalized.R")
+source("scripts/analysis/stat_generalized.R")
 library(tidyjson)
+library(httr2)
+library(tidyverse)
+library(jsonlite)
 
 # archive-level stats
 
@@ -11,20 +14,12 @@ library(tidyjson)
 
 
 archive_it <- read.csv("data/csv/archive-it-C19WA.csv")
-archive_it_stats <- zavalina_stats(archive_it,
-               description_col = archive_it$Description, 
-               subject_col = archive_it$Subject, 
-               geographic_col = archive_it$Coverage, 
-               temporal_col = archive_it$Archived.since)
+archive_it_stats <- zavalina_stats(archive_it, c("Description", "Subject", "Coverage", "Archived.since"))
 
 ukwa <- read.csv("data/csv/UKWA_Covid19Collection.csv")
 ukwa <- ukwa %>% 
   mutate(x.col = NA)
-ukwa_stats <- zavalina_stats(ukwa,
-               description_col = ukwa$Description, 
-               subject_col = ukwa$x.col, 
-               geographic_col = ukwa$x.col, 
-               temporal_col = ukwa$Date.Created)
+ukwa_stats <- zavalina_stats(ukwa, c("Description", "x.col", "x.col", "Date.Created"))
 
 ### tidyjson method --> worse result than tidyjson 
 # disability <- read_json("data/json/dis_archive_JSON.json")
@@ -46,87 +41,111 @@ ukwa_stats <- zavalina_stats(ukwa,
 disability <- fromJSON("data/json/dis_archive_JSON.json") %>% 
   mutate(x.col = NA)
 
-disability_stats <- zavalina_stats(disability,
-               disability$summary,
-               disability$categories,
-               disability$x.col,
-               disability$date)
+disability_stats <- zavalina_stats(disability, c("summary", "categories", "x.col", "date"))
 
 massobvs <- read.csv("data/csv/MassObservation.csv")
 massobvs <- massobvs %>% 
   mutate(x.col = NA)
 
-massobvs_stats <- zavalina_stats(massobvs,
-                                 massobvs$Description,
-                                 massobvs$Keywords,
-                                 massobvs$County.Free.Text,
-                                 massobvs$Date.Received)
+massobvs_stats <- zavalina_stats(massobvs, c("Description", "Keywords", "County.Free.Text", "Date.Received"))
 
-# pivoting wider to facilitate join
+# gather JOTPY metadata -------------------------------------------------------------------
 
-ukwa_stats_wide <- ukwa_stats %>% 
-  select(-unique, -pct_unique) %>% 
-  pivot_wider(names_from = field,
-              values_from = c("occurences", "prevalence")) %>% 
-  mutate(archive = "ukwa")
+### Uncomment these if running for the first time: 
+# req <- request("https://covid-19archive.org/api/items")
+# resps <- req_perform_iterative( req, next_req = iterate_with_offset("page", start = 1, offset = 1), max_reqs = 351)
 
-archive_it_stats_wide <- archive_it_stats %>% 
-  select(-unique, -pct_unique) %>% 
-  pivot_wider(names_from = field,
-              values_from = c("occurences", "prevalence")) %>% 
-  mutate(archive = "archive_it")
+jotpy_items <- resps %>%
+  resps_data(\(resp) resp_body_string(resp)) 
 
-disability_stats_wide <- disability_stats %>% 
-  select(-unique, -pct_unique) %>% 
-  pivot_wider(names_from = field,
-              values_from = c("occurences", "prevalence")) %>% 
-  mutate(archive = "disability")
+df_full <- as.data.frame(matrix(ncol = 60))
 
-massobvs_stats_wide <- massobvs_stats %>% 
-  select(-unique, -pct_unique) %>% 
-  pivot_wider(names_from = field,
-              values_from = c("occurences", "prevalence")) %>% 
-  mutate(archive = "massobvs")
+for(i in 1:length(jotpy_items)){
+  df <- fromJSON(jotpy_items[i])
+  df_full <- bind_rows(df_full, df)
+}
 
-# joining occurence/prevalence stats
+jotpy <- df_full %>% 
+  select(-starts_with("V", ignore.case=F))
 
-stats_combined <- rbind(ukwa_stats_wide,
-                        archive_it_stats_wide,
-                        disability_stats_wide,
-                        massobvs_stats_wide) %>% 
-  select(archive, ends_with("description"), ends_with("subject"), ends_with("geographic"), ends_with("temporal"))
+# zavalina stats for JOTPY
 
-# joining uniqueness stats
+jotpy_stats <- zavalina_stats(jotpy, c("dcterms:description", "dcterms:subject", "dcterms:coverage", "dcterms:date"))
 
-ukwa_unique <- ukwa_stats %>% 
-  select(field, unique, pct_unique) %>% 
-  pivot_wider(names_from = field,
-              values_from = c("unique", "pct_unique")) %>% 
-  mutate(archive = "ukwa")
 
-archive_it_unique <- archive_it_stats %>% 
-  select(field, unique, pct_unique) %>% 
-  pivot_wider(names_from = field,
-              values_from = c("unique", "pct_unique")) %>% 
-  mutate(archive = "archive_it")
+# early attempt at joining stats -- ignore --------------------------------
 
-disability_unique <- disability_stats %>% 
-  select(field, unique, pct_unique) %>% 
-  pivot_wider(names_from = field,
-              values_from = c("unique", "pct_unique")) %>% 
-  mutate(archive = "disability")
 
-massobvs_unique <- massobvs_stats %>% 
-  select(field, unique, pct_unique) %>% 
-  pivot_wider(names_from = field,
-              values_from = c("unique", "pct_unique")) %>% 
-  mutate(archive = "massobvs")
-
-uniqueness_stats_combined <- rbind(ukwa_unique,
-                        archive_it_unique,
-                        disability_unique,
-                        massobvs_unique) %>% 
-  select(archive, ends_with("description"), ends_with("subject"), ends_with("geographic"), ends_with("temporal"))
+# ukwa_stats_wide <- ukwa_stats %>% 
+#   select(-unique, -pct_unique) %>% 
+#   pivot_wider(names_from = field,
+#               values_from = c("occurences", "prevalence")) %>% 
+#   mutate(archive = "ukwa")
+# 
+# archive_it_stats_wide <- archive_it_stats %>% 
+#   select(-unique, -pct_unique) %>% 
+#   pivot_wider(names_from = field,
+#               values_from = c("occurences", "prevalence")) %>% 
+#   mutate(archive = "archive_it")
+# 
+# disability_stats_wide <- disability_stats %>% 
+#   select(-unique, -pct_unique) %>% 
+#   pivot_wider(names_from = field,
+#               values_from = c("occurences", "prevalence")) %>% 
+#   mutate(archive = "disability")
+# 
+# massobvs_stats_wide <- massobvs_stats %>% 
+#   select(-unique, -pct_unique) %>% 
+#   pivot_wider(names_from = field,
+#               values_from = c("occurences", "prevalence")) %>% 
+#   mutate(archive = "massobvs")
+# 
+# jotpy_stats_wide <- jotpy_stats %>% 
+#   select(-unique, -pct_unique) %>% 
+#   pivot_wider(names_from = field,
+#               values_from = c("occurences", "prevalence")) %>% 
+#   mutate(archive = "jotpy")
+# 
+# # joining occurence/prevalence stats
+# 
+# stats_combined <- rbind(ukwa_stats_wide,
+#                         archive_it_stats_wide,
+#                         disability_stats_wide,
+#                         massobvs_stats_wide,
+#                         jotpy_stats_wide) %>% 
+#   select(archive, ends_with("description"), ends_with("subject"), ends_with("geographic"), ends_with("temporal"))
+# 
+# # joining uniqueness stats
+# 
+# ukwa_unique <- ukwa_stats %>% 
+#   select(field, unique, pct_unique) %>% 
+#   pivot_wider(names_from = field,
+#               values_from = c("unique", "pct_unique")) %>% 
+#   mutate(archive = "ukwa")
+# 
+# archive_it_unique <- archive_it_stats %>% 
+#   select(field, unique, pct_unique) %>% 
+#   pivot_wider(names_from = field,
+#               values_from = c("unique", "pct_unique")) %>% 
+#   mutate(archive = "archive_it")
+# 
+# disability_unique <- disability_stats %>% 
+#   select(field, unique, pct_unique) %>% 
+#   pivot_wider(names_from = field,
+#               values_from = c("unique", "pct_unique")) %>% 
+#   mutate(archive = "disability")
+# 
+# massobvs_unique <- massobvs_stats %>% 
+#   select(field, unique, pct_unique) %>% 
+#   pivot_wider(names_from = field,
+#               values_from = c("unique", "pct_unique")) %>% 
+#   mutate(archive = "massobvs")
+# 
+# uniqueness_stats_combined <- rbind(ukwa_unique,
+#                         archive_it_unique,
+#                         disability_unique,
+#                         massobvs_unique) %>% 
+#   select(archive, ends_with("description"), ends_with("subject"), ends_with("geographic"), ends_with("temporal"))
 
 
 # comparison to Dublin Core -----------------------------------------------
@@ -196,9 +215,65 @@ disability_dc <- dc_stats(disability, c("title",
                                         "x.col",
                                         "x.col"))
 
-# combine stats
+jotpy_dc <- dc_stats(jotpy, c("dcterms:title", 
+                              "dcterms:subject", 
+                              "dcterms:description",
+                              "dcterms:type",
+                              "dcterms:source",
+                              "dcterms:relation",
+                              "dcterms:coverage",
+                              "dcterms:creator",
+                              "dcterms:publisher",
+                              "dcterms:contributor",
+                              "dcterms:rights",
+                              "dcterms:date",
+                              "dcterms:format", 
+                              "dcterms:identifier",
+                              "dcterms:language"))
 
-### PREVALENCE
+
+# joined stats ------------------------------------------------------------
+
+### Zavalina - PREVALENCE
+
+ukwa_z_prev <- ukwa_stats %>% 
+  select(z.field, prevalence) %>% 
+  pivot_wider(names_from = z.field,
+              values_from = prevalence) %>% 
+  mutate(archive = "UKWA") 
+
+archive_it_z_prev <- archive_it_stats %>% 
+  select(z.field, prevalence) %>% 
+  pivot_wider(names_from = z.field,
+              values_from = prevalence) %>% 
+  mutate(archive = "Archive-It") 
+
+disability_z_prev <- disability_stats %>% 
+  select(z.field, prevalence) %>% 
+  pivot_wider(names_from = z.field,
+              values_from = prevalence) %>% 
+  mutate(archive = "Disability") 
+
+massobvs_z_prev <- massobvs_stats %>% 
+  select(z.field, prevalence) %>% 
+  pivot_wider(names_from = z.field,
+              values_from = prevalence) %>% 
+  mutate(archive = "MassObservation") 
+
+jotpy_z_prev <- jotpy_stats %>% 
+  select(z.field, prevalence) %>% 
+  pivot_wider(names_from = z.field,
+              values_from = prevalence) %>% 
+  mutate(archive = "JOTPY") 
+
+z_prevalence_stats <- rbind(ukwa_z_prev, 
+                             archive_it_z_prev,
+                             disability_z_prev,
+                             massobvs_z_prev,
+                             jotpy_z_prev
+)
+
+### DC - PREVALENCE
 
 ukwa_dc_prev <- ukwa_dc %>% 
   select(dc.field, prevalence) %>% 
@@ -224,9 +299,16 @@ massobvs_dc_prev <- massobvs_dc %>%
               values_from = prevalence) %>% 
   mutate(archive = "MassObservation") 
 
+jotpy_dc_prev <- jotpy_dc %>% 
+  select(dc.field, prevalence) %>% 
+  pivot_wider(names_from = dc.field,
+              values_from = prevalence) %>% 
+  mutate(archive = "JOTPY") 
+
 dc_prevalence_stats <- rbind(ukwa_dc_prev, 
                              archive_it_dc_prev,
                              disability_dc_prev,
-                             massobvs_dc_prev
+                             massobvs_dc_prev,
+                             jotpy_dc_prev
                              )
 
