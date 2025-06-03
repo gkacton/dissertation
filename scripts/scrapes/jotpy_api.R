@@ -1,8 +1,7 @@
-# BACKUP OF JOTPY API SCRIPT
+# HARVESTING JOTPY METADATA VIA API SCRIPT
 
-### Uncomment these if running for the first time: 
-# req <- request("https://covid-19archive.org/api/items")
-# resps <- req_perform_iterative( req, next_req = iterate_with_offset("page", start = 1, offset = 1), max_reqs = 351)
+req <- request("https://covid-19archive.org/api/items")
+resps <- req_perform_iterative( req, next_req = iterate_with_offset("page", start = 1, offset = 1), max_reqs = 351)
 
 jotpy_items <- resps %>%
   resps_data(\(resp) resp_body_string(resp)) 
