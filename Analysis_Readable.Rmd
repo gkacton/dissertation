@@ -1,0 +1,309 @@
+---
+title: "Metadata Evaluation of COVID-19 Digital Archives"
+author: "Grace Acton"
+date: "4 June 2025 (UPDATE LATER)"
+output: html_document
+---
+
+# Introduction
+
+This notebook applies Bruce and Hillman's metadata quality framework to five digital archives of the COVID-19 pandemic. Each section conducts an evaluation based on each of Bruce and Hillman's seven criteria; most utilize quantitative methods, but some require only qualitative information. 
+
+```{r source-scripts}
+source("scripts/analysis/occurence_stats.R")
+```
+
+# Provenance
+_Who is responsible for creating, extracting, or transforming the metadata? How was the metadata created or extracted? What transformations have been done on the data since its creation?_ 
+
+### Archive-It COVID-19 Web Archive (Archive-It)
+
+The "About" page for the COVID-19 Web Archive provides a significant amount of information about the overall creation of the archive. Most collection records contain information about the collecting organization, and often specify a project or team within the larger organization, which provides some provenance. However, because this is an aggregation of multiple collections by different collecting organizations, it is difficult to determine metadata provenance.
+
+With regards to funding, Archive-It credits financial support from the Institute of Museum and Library Services (IMLS) American Rescue Plan grant program, which allowed them to provide cost-sharing to organizations "for data budget increases to those who want to build web archive collections related to the COVID-19 pandemic." (https://archive-it.org/blog/covid-19/). 
+
+### COVID Disability Archive (Disability)
+
+The provenance regarding the creation of the COVID Disability Archive overall is poor. The language of the "About Us" page suggests that the archive has been created and maintained by a group, based on the recurring use of "we" and "us", but there is no information to determine whether this group was pre-existing before the pandemic, or a community that found each other _because_ of the pandemic. The creators have focused the "About Us" page on justifying the archive's creation and existence, and their description highlights both the impact of COVID on the disabled community and the historical erasure of disabled experiences. However, this does not replace the need for provenance about _this particular_ archive. Individual records vary in their degree of provenance -- some contributors chose to identify themselves, while others did not. However, there is no information about who created the archive's metadata.
+
+The COVID Disability Archive was financially supported by an Awesome Foundation grant. Looking at the project's page on the Awesome Foundation website reveals that the project was created by Daisy Holder, author of _Queer Disability Through History_. Their LinkedIn biography describes their experience as including "digitising, cataloguing and building a digital archive," which suggests that Holder was responsible for much of the metadata creation of the COVID Disability Archive. [Update when you've asked Holder questions!] However, because this information is not readily available on the archive's website, it limits the average user's ability to assess the archive, and thus limits its provenance score. 
+
+### Journal of the Plague Year (JOTPY)
+
+JOTPY has been written about more than any other COVID archive, and has well-documented provenance. The website includes a long, but incomplete, list of curatorial team members, which includes the project's creators, managing director, project coordinator, project leads, curatorial leads at various participating organizations, graduate fellows, interns, and advisory board members. As of March 2021, the JOTPY team was "comprised of more than 300 archivists, faculty, staff, students, teachers, and public history practitioners and organizations." (https://covid-19archive.org/s/archive/page/ncph) They provide contact information for Mark Tebeau, one of the project creators, and the current managing director, Marissa C. Rhodes. The "What We Do" page includes mission, values, and vision statements. 
+
+Item records include multiple types of provenance information. The Contributor element lists the item's creator, and there are multiple date elements to record when the item was created, submitted, and last modified. Keywords, or subject tags, are separated into two elements: Curator's Tags and Contributor's Tags. This makes it clear which keywords the contributor, themselves, wanted to use to identify or describe their item, and which were added to the item later by a member of the JOTPY team. For items which were created as part of a school assignment, the Event Identifier element is used to connect those contributions to the assignment, as additional provenance information. Overall, the JOTPY provides an excellent amount of provenance information, which is only enhanced by the academic papers which have been written about its creation. 
+
+### Mass Observation COVID-19 Reflections (MassObvs)
+
+Mass Observation provides provenance information in the form of a downloadable "Background Information" document. This document explains the different types of collecting which have been compiled into the COVID-19 Reflections, and how their cataloging differs. Registered Mass Observation participants who respond to regular, official Mass Observation directives have detailed biographical information collected about them, but Mass Observation additionally issued open calls for diaries during COVID. Diary contributors were _not_ required to submit the biographical data, but Mass Observation retained this information if it was provided. The "Background Information" document additionally provides context for other metadata fields. They explain that, because Mass Observation staff were on a work-from-home order, they were not always able to record the date that items were received, and thus many item dates refer to the date of processing, rather than reception. They also identify the controlled vocabularies which were used to derive keyword terms: HASSET, FAST (LCSH), and some bespoke terms; Dr. Kathryn Lester and Dr. Justyna Robinson are credited with providing "advice and guidance" on the keyword term development. Finally, the document identifies which categories of information were redacted in items to protect contributors' identities, including birth dates, full names, and addresses. This document is easily found on the Mass Observation COVID-19 reflections website, making the provenance relatively complete and readily accessible by users. 
+
+### UK Web Archive Coronavirus Collection (UKWA)
+
+The UK Web Archive is currently unavailable for public use due to the October 2023 cyber-attack. The metadata have been provided to me by Carlos Lelkes-Rarugal, Assistant Web Archivist at the British Library. Because the entire UK Web Archive is unavailable, it is difficult to assess the collection's metadata provenance, especially in terms of its public availability.
+
+# Timeliness
+_Metadata should be applied prior to access provisioning, and remain applicable if the item is changed or replaced. Temporal information about record creation and record editing should be provided._
+
+### Archive-It
+
+Archive-It embeds temporal information into its captures, and, like the Wayback Machine, allows users to see a single site at multiple moments in time if it has been captured multiple times. However, it seems that the metadata is associated with the site itself, and is not updated when the site is re-captured, assuming the title, URL, and creator is the same. At the collection level, some collections provide an "Archived Since" date with varying levels of granularity. 60.4% (n = 102) collections do not include the Archived Since element, and 20.7% (n = 35) only say that it has been archived since 2020, not providing more granular information about when within the year the collection was started. Without further information, it is difficult to assess the timeliness of these collections relative to the timeline of the pandemic. 
+
+```{r archive-it-timeliness}
+archive_it_dates <- archive_it %>% 
+  select(Archived.since) %>% 
+  mutate(Archived.since = ifelse(Archived.since == "2020-2022" | Archived.since == "2020-2021" | Archived.since == "2020-9999", "2020", Archived.since)) %>% 
+  mutate(Archived.since = ifelse(str_detect(Archived.since, "Library of Virginia"), "April 2020", Archived.since)) %>% 
+  mutate(start.date = parse_date_time(Archived.since, orders = c("ymd", "y-m-d", "md", "y", "mdy", "ym"))) 
+
+archive_it_dates %>% 
+  group_by(start.date) %>% 
+  summarize(count = n()) %>% 
+  arrange(desc(count))
+
+median(archive_it_dates$start.date, na.rm = T)
+mean(archive_it_dates$start.date, na.rm = T)
+
+ggplot(archive_it_dates) + 
+  geom_histogram(aes(x = start.date))
+```
+
+
+### Disability
+
+The COVID Disability Archive, confusingly, created an item record about the archive itself, rather than including temporal information in its pre-existing "About Us" page. According to this item, dated to March 14, 2022, they were "Now beginning to upload submissions to the archive," and rhetorically asked users, "Do you have any idea how long it takes to catalogue and upload all this stuff?" (https://coviddisabilityarchive.com/2022/03/14/new-post/) This suggests that the items were, in fact, cataloged before being made publicly accessible. However, this also causes a date confusion, as items are dated to before the March 14, 2022 post. It is likely that the dates on item records represent when the item was _submitted_, and thus it is difficult to determine when each item was uploaded. 
+
+To facilitate a broad analysis of processing times, I will assume that the item dates refer to when the item was submitted or created, and utilizing a standard processing/posting date of March 14, 2022. Based on this analysis, items were processed and posted, on average, 592.8 days after they were submitted. 
+
+```{r disability-process-time}
+dis_dates <- disability %>% 
+  mutate(processed = parse_date_time("03-14-2022", orders = "m-d-y")) %>% 
+  mutate(date = parse_date_time(date, orders = "mdy")) %>% 
+  mutate(diff_dates = as.numeric(as.duration(interval(date, processed)), "days"))
+
+median(dis_dates$diff_dates)
+mean(dis_dates$diff_dates)
+sd(dis_dates$diff_dates)
+
+ggplot(dis_dates) +
+  geom_histogram(aes(x = diff_dates))
+```
+
+
+### JOTPY
+
+JOTPY provides many types of date information, including the date of item submission, modification dates, and a general "Date" field used for temporal information of relevance to the item. 
+
+Using the Dublin Core fields `Created` and `Date Submitted`, the mean time span between item creation and the item being submitted to the archive is 260 days, with a median of 8. The largest number of items have 0 days between creation and submission. Some errors are present: 265 items have submission dates which predate item creation, 10 items have creation dates from before the year 2000, and one item is listed as being created in 2031. Using only these obvious errors, JOTPY's date metadata has an error rate of 2.8% among items with recorded creation dates. However, 8002 items, or 45.6%, have no listed date of creation.
+
+```{r jotpy-date-diff}
+jotpy_dates <- jotpy %>% 
+  select(`dcterms:created`, `dcterms:dateSubmitted`) %>% 
+  unnest_wider(col = c("dcterms:created", "dcterms:dateSubmitted"),
+               names_sep = ".",
+               names_repair = "unique"
+  ) %>% 
+  select(contains("@value")) %>% 
+  unnest_longer(col = `dcterms:created.@value`) %>% 
+  unnest_longer(col = `dcterms:dateSubmitted.@value`) %>% 
+  # filter(`dcterms:created.@value` != "NULL") %>% 
+  mutate(created = parse_date_time(`dcterms:created.@value`, orders = "m/d/y"),
+         submitted = parse_date_time(`dcterms:dateSubmitted.@value`, order = "m/d/y")) %>% 
+  rowwise() %>% 
+  mutate(create_submit_diff = as.numeric(as.duration(interval(created, submitted)), "days"))
+
+mean(jotpy_dates$create_submit_diff, na.rm = T)
+median(jotpy_dates$create_submit_diff, na.rm = T)
+
+jotpy_dates %>% 
+  group_by(create_submit_diff) %>% 
+  summarise(count = n()) %>% 
+  arrange(desc(count))
+
+## Modification dates
+
+jotpy_mods <- jotpy %>% 
+  select(`dcterms:dateSubmitted`, `dcterms:modified`) %>% 
+  unnest_wider(col = c("dcterms:modified", "dcterms:dateSubmitted"),
+               names_sep = ".",
+               names_repair = "unique"
+  )
+
+modifications <- jotpy_mods %>% 
+  select(contains("modified")) %>% 
+  rowwise() %>% 
+  mutate(avg_mods = length(`dcterms:modified.@value`))
+
+mean(modifications$avg_mods, na.rm=T)
+median(modifications$avg_mods, na.rm=T)
+
+first_mod <- jotpy_mods %>% 
+  filter(!is.na(`dcterms:modified.@value`)) %>% 
+  rowwise() %>% 
+  mutate(first_mod = `dcterms:modified.@value`[1]) %>% 
+  select(`dcterms:dateSubmitted.@value`, first_mod) %>% 
+  mutate(submitted = parse_date_time(`dcterms:dateSubmitted.@value`[1], order = "m/d/y"),
+         first_mod_date = parse_date_time(first_mod, order = "m/d/y")) %>% 
+  rowwise() %>% 
+  mutate(submit_mod_diff = as.numeric(as.duration(interval(submitted, first_mod_date)), "days"))
+
+mean(first_mod$submit_mod_diff, na.rm =T)
+median(first_mod$submit_mod_diff, na.rm =T)
+```
+
+
+### Mass Observation
+
+Mass Observation's "Background Information" clarifies some timeliness information: although they would typically record the date of receipt for each item, this was not always possible due to work-from-home orders, and thus some item dates represent the date of processing. Additionally, the database's webpage says that the material was collected in 2020-2021, but the database was created between 2022 and 2023; therefore, the items were created and received, and likely processed, well before being made publicly accessible. 
+
+Most submissions were received in late 2020, although there was an early influx in May; Mass Observation runs an annual open call for diaries on 12th May, as "The 12th May is an important date for Mass-Observation as in 1937 it was their first full-scale study to document the Coronation of King George." ("Background Information") As many of these were likely submitted online, it follows that their date of reception would also be 12th May. However, the Date Received data appears to have formatting inconsistencies, which complicate analysis of dates. The single most common date of receipt was December 5, 2020 (n = 3090), followed by May 12, 2020 (n = 1241) -- notably, these two dates are easily confused when written numerically, depending on the date format in use. In day/month/year notation, as used in the UK, 12 May 2020 is 12/05/2020, and 5 December 2020 is 05/12/2020; when written in month/day/year notation, commonly used in the United States, the two switch. I suspect that there is date format confusion happening in this data: 71.4% of the 12th May diary submissions were received on "05/12/2020" and the remaining submissions on "12/05/2020". Because these submissions were tied to the **specific** date of 12th May, it is likely that **all** submissions were meant to be tagged with the same date, but not all dates were written in the same format. This is an _**Accuracy**_ problem, and casts doubt on the other dates present in the data set. 
+
+
+```{r massobvs-dates}
+massobvs_dates <- massobvs %>% 
+  mutate(date = parse_date_time(Date.Received, orders = "d/m/y"))
+
+may12 <- massobvs %>% 
+  filter(Title.of.Collection == "12th May 2020 diary") %>% 
+  group_by(Date.Received) %>% 
+  summarize(count = n()) %>% 
+  arrange(desc(count))
+
+ggplot(massobvs_dates) +
+  geom_histogram(aes(x = date)) 
+
+massobvs_dates %>% 
+  group_by(date) %>% 
+  summarize(count = n()) %>% 
+  arrange(desc(count))
+
+mean(massobvs_dates$date, na.rm = T)
+
+```
+
+### UKWA
+
+Like Archive-It, many UK Web Archive items have multiple associated dates with unchanging metadata, as sites were crawled repeatedly. The metadata includes many types of date elements; however, it is unclear what categories of information these dates represent. Some are straightforward, such as start and end dates for crawls. It can be assumed that "Date Created" represents the date that the _site_, or specific page within the site, was created. However, I am unable to determine whether "Updated" represents the last time the site itself was updated, or the last time the site's metadata in the archive was updated. An additional piece of timeliness information is crawl frequency. Most sites were crawled daily (n = 1549), followed by weekly (n = 1071) or monthly (n = 928). 
+
+The date information presents similar errors to JOTPY. 74 items, representing 1.5% of all items and 4.5% of items that have duration data, have crawl end dates which predate their start dates. Additionally, some sites will continue to be crawled in the future, with some extending until the end of 2030. The average crawl duration is just over a year - 385.1 days -- although the median is just 10 days. When sites are grouped by crawl frequency, sites which were crawled annually (352 days), daily (375 days), and weekly (339 days) have similar average crawl durations, but sites which were crawled monthly (681 days) or quarterly (683 days) have an average duration of almost twice as long. The relatively smaller category of sixmonthly crawls seems to be responsible for many of the crawl date errors, as its average of -169.5 days indicates that many of its items may have had their start and end dates reversed in the metadata. 
+
+Although the UKWA offers a great _quantity_ of temporal data, because it is lacking in data provenance due to its still-disabled website, it is difficult to determine what some of this temporal information is meant to represent. As a result, it is difficult to assess the archive's timeliness. 
+
+```{r ukwa-dates}
+ukwa %>% 
+  group_by(Crawl.Frequency) %>% 
+  summarize(count = n()) %>% 
+  arrange(desc(count))
+
+ukwa_dates <- ukwa %>% 
+  mutate(crawl_start = parse_date_time(Crawl.Start.Date, orders = "dmy"),
+         crawl_end = parse_date_time(Crawl.End.Date, orders = "dmy"),
+         Updated = parse_date_time(Updated, orders = "dmy"), 
+         Date.Created = parse_date_time(Date.Created, orders = "dmy")) %>% 
+  mutate(crawl_duration = as.numeric(as.duration(interval(crawl_start, crawl_end)), "days"))
+
+ukwa_dates %>% 
+  group_by(Crawl.Frequency) %>% 
+  summarize(avg_crawl_duration = mean(crawl_duration, na.rm = T),
+            count = n())
+
+mean(ukwa_dates$crawl_duration, na.rm = T)
+median(ukwa_dates$crawl_duration, na.rm = T)
+```
+
+# Accessibility
+_The element should support technical and intellectual access and retrieval for the target user demographics._
+
+A consideration of _accessibility_ necessitates defining the user base for the targeted archives. In this evaluation, I consider the target user to be a humanities researcher; they may be a professional researcher, such as a PhD candidate, professor, cultural heritage professional, or author. If they are an enthusiast, they are someone who has experience using cultural heritage databases and the Internet, generally, such as a genealogist or "History Buff". 
+
+### Archive-It
+
+Across the `r nrow(archive_it)` collections in the Archive-It COVID-19 web archive, there are `r ncol(archive_it)` metadata elements in use. Of these, most contain user-friendly language, avoiding both technical and vague terms. Subject information, when included, identifies COVID-19, health, and disease as key terms, with many utilizing multiple terms for COVID (e.g., "Coronavirus" and "COVID-19") to improve discoverability. 
+
+**Use** metadata is limited. `r nrow(archive_it %>% filter(!is.na(Rights)))` items contain rights statements, and `r nrow(archive_it %>% filter(!is.na(Language)))` include language information. There are also some collections which add redundant elements Two collections by the Harvard Business school added multiple redundant metadata elements to the collection-level records, including links to the collection (which are automatically linked by Archive-It), an element labeled `Theme` which only utilizes the generic value "Thematic Collection", and extent information with the vague value "1 collection". The Western Michigan University Libraries' collections utilize a `Genre` element with a vague, generic value, "Web archives" -- redundant, given that they are part of the COVID-19 Web Archive. 
+
+There is also a lack of clarity about the contents of some elements, but this will be discussed in _**Conformance to Expectations**_. 
+
+```{r archive-it-elements}
+colnames(archive_it) %>% knitr::kable() 
+```
+
+
+### Disability
+
+
+```{r disability-accessibility}
+dis_lengths <- disability %>% 
+  rowwise() %>% 
+  mutate(summary_length = str_length(summary)) %>% 
+  mutate(cat_length = length(categories))
+
+dis_categories <- disability %>% 
+  unnest_longer(categories) %>% 
+  distinct(categories)
+
+mean(dis_lengths$summary_length, na.rm =T)
+mean(dis_lengths$cat_length, na.rm=T)
+```
+
+The COVID Disability Archive has minimal metadata, but it is highly accessible to users. Dates are clearly written in a single date format, `r round(100*nrow(disability %>% filter(!is.na(summary)))/nrow(disability), 1)`% of records include descriptions, which average 62.1 characters in length (about 10 words, assuming 6 characters per word). The six categories in use - `r dis_categories$categories` - are broad, but distinct, and aid in discoverability. Additionally, the collection is small enough to easily browse, making keyword searching less likely. Overall, the metadata is highly accessible. 
+
+### JOTPY
+
+JOTPY utilizes a larger number of metadata elements than the other archives, and most element values contain information which is intelligible and of use to the defined audience. 
+
+```{r jotpy-subject-access}
+jotpy_subjects_dc <- jotpy %>% 
+  select(`dcterms:subject`) %>% 
+  unnest_wider(col = `dcterms:subject`) %>% 
+  unnest_longer(col = `@value`) %>% 
+  group_by(`@value`) %>% 
+  summarize(count = n())
+
+jotpy_subjects_foaf <- jotpy %>% 
+  select(`foaf:topic_interest`) %>% 
+  unnest_wider(col = `foaf:topic_interest`) %>% 
+  unnest_longer(col = `@value`) %>% 
+  group_by(`@value`) %>% 
+  summarize(count = n())
+
+jotpy_subjects <- rbind(jotpy_subjects_dc, jotpy_subjects_foaf)
+```
+
+JOTPY incorporates both a traditional subject vocabulary and a _folksonomy_, created by users contributing their own subject tags and keywords to records. Together, they create a rich vocabulary of description. There are `r nrow(jotpy_subjects_dc)` terms in the controlled vocabulary, as opposed to `r nrow(jotpy_subjects_foaf)` folksonomy terms. `r nrow(jotpy_subjects_foaf %>% filter(count == 1))` folksonomy terms are used to describe only a single item, whereas this is only an issue for `r nrow(jotpy_subjects_dc %>% filter(count == 1))` controlled vocabulary terms. On average, each folksonomy term is used to describe `r mean(jotpy_subjects_foaf$count, na.rm=T)` items; each controlled vocabulary terms is used, on average, in `r mean(jotpy_subjects_dc$count, na.rm=T)` records. Rights statements are, however, largely missing: only 0.7% of items (n = 125) include values under the `dcterms:rights` element. Other 
+
+### Mass Observation
+
+### UKWA
+
+# Completeness
+
+```{r table-min-prevalence}
+library(knitr)
+library(kableExtra)
+
+min_prevalence_stats %>% 
+  arrange(desc(avg_score)) %>% 
+  kable(digits = 3) %>% 
+  kable_styling(bootstrap_options = "responsive")
+```
+
+```{r table-dc-prevalence}
+library(knitr)
+
+dc_prevalence_stats %>% 
+  arrange(desc(avg_score)) %>% 
+  kable(digits = 3) %>% 
+  kable_styling(bootstrap_options = c("striped", "hover", "responsive")) 
+```
+
+# Accuracy
+
+
+
+# Conformance to Expectations 
+
+
+
+# Logical Consistency and Coherence
+
