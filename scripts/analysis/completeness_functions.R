@@ -1,4 +1,4 @@
-# A BACKUP OF COMPLETENESS STATS FUNCTIONS SCRIPT
+# COMPLETENESS STATS FUNCTIONS SCRIPT
 # Functions to compare metadata to a set standard -------------------------
 
 # This script creates two functions which calculate completeness and uniqueness 
@@ -56,7 +56,7 @@ minimal_stats <- function(data, columns){
       stats$archive_field[i] <- columns[i]
       
       # populate stats
-      stats$occurences[i] <- nrow(data %>% filter(.data[[columns[[i]]]] != "" & .data[[columns[[i]]]] != "NULL"))
+      stats$occurences[i] <- nrow(data %>% filter(.data[[columns[[i]]]] != "" & .data[[columns[[i]]]] != "NULL" & is.na(.data[[columns[[i]]]]) == F))
       stats$prevalence[i] <- stats$occurences[i]/nrow(data)
       stats$unique[i] <- nrow(data %>% filter(is.na(.data[[columns[[i]]]]) == F & .data[[columns[[i]]]] != "NULL") %>% distinct(.data[[columns[[i]]]]))
       stats$pct_unique[i] <- stats$unique[i]/stats$occurences[i]
@@ -122,7 +122,7 @@ dc_stats <- function(data, columns) {
       stats$archive_field[i] <- elements[i]
       
       # populate stats
-      stats$occurences[i] <- nrow(data %>% filter(.data[[columns[[i]]]] != "" & .data[[columns[[i]]]] != "NULL"))
+      stats$occurences[i] <- nrow(data %>% filter(.data[[columns[[i]]]] != "" & .data[[columns[[i]]]] != "NULL" & is.na(.data[[columns[[i]]]]) == F))
       stats$prevalence[i] <- stats$occurences[i]/nrow(data)
       stats$unique[i] <- nrow(data %>% filter(is.na(.data[[columns[[i]]]]) == F & .data[[columns[[i]]]] != "NULL") %>% distinct(.data[[columns[[i]]]]))
       stats$pct_unique[i] <- stats$unique[i]/stats$occurences[i]
