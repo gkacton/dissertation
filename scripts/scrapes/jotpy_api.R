@@ -15,7 +15,3 @@ for(i in 1:length(jotpy_items)){
 
 jotpy <- df_full %>% 
   select(-starts_with("V", ignore.case=F))
-
-# zavalina stats for JOTPY
-
-jotpy_stats <- zavalina_stats(jotpy, c("dcterms:description", "dcterms:subject", "dcterms:coverage", "dcterms:date"))
