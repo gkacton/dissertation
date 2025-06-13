@@ -30,8 +30,35 @@ massobvs <- read.csv("data/csv/MassObservation.csv")
 massobvs <- massobvs %>% 
   mutate(x.col = NA)
 
-### One way to get the JOTPY data
-source("scripts/scrapes/JOTPY_api.R") # takes a long time to run!
+#jotpy <- read_file("data/json/JOTPY.json") %>% fromJSON()
+### Alternative SLOW way to get the JOTPY data
+# source("scripts/scrapes/JOTPY_api.R") # takes a long time to run!
+
+jotpy <- fromJSON("data/json/jotpy_backup.json")
+
+# jotpy_MASTER <- jotpy  # BACKUP 
+# jotpy <- jotpy_MASTER
+
+jotpy_chr <- jotpy %>% 
+  unnest_wider(col = starts_with("dcterms"), names_sep = ".", names_repair = "unique") %>% 
+  rowwise() %>% 
+  mutate(`dcterms:title.@value` = paste(unlist(`dcterms:title.@value`), collapse = ""),
+         `dcterms:identifier.@value` = paste(unlist(`dcterms:identifier.@value`), collapse = ""),
+         `dcterms:description.@value` = paste(unlist(`dcterms:description.@value`), collapse = ""),
+         `dcterms:subject.@value` = paste(unlist(`dcterms:subject.@value`), collapse = ""),
+         `dcterms:coverage.@value` = paste(unlist(`dcterms:coverage.@value`), collapse = ""),
+         `dcterms:date.@value` = paste(unlist(`dcterms:date.@value`), collapse = ""),
+         `dcterms:source.@value` = paste(unlist(`dcterms:source.@value`), collapse = ""),
+         `dcterms:relation.@value` = paste(unlist(`dcterms:relation.@value`), collapse = ""),
+         `dcterms:type.@value` = paste(unlist(`dcterms:type.@value`), collapse = ""),
+         `dcterms:creator.@value` = paste(unlist(`dcterms:creator.@value`), collapse = ""),
+         `dcterms:publisher.@value` = paste(unlist(`dcterms:publisher.@value`), collapse = ""),
+         `dcterms:contributor.@value` = paste(unlist(`dcterms:contributor.@value`), collapse = ""),
+         `dcterms:rights.@value` = paste(unlist(`dcterms:rights.@value`), collapse = ""),
+         `dcterms:format.@value` = paste(unlist(`dcterms:format.@value`), collapse = ""),
+         `dcterms:language.@value` = paste(unlist(`dcterms:language.@value`), collapse = ""))
+
+
 
 # if anything happens to the JOTPY data, run `scripts/scrapes/JOTPY_api.R`
 
@@ -52,18 +79,18 @@ disability_min <- minimal_stats(disability, c("title",
                                               "x.col",
                                               "date"))
 
-jotpy_min <- minimal_stats(jotpy, c("dcterms:title", 
-                                    "dcterms:identifier",
-                                    "dcterms:description",
-                                    "dcterms:subject",
-                                    "dcterms:coverage",
-                                    "dcterms:date"))
+jotpy_min <- minimal_stats(jotpy_chr, c("dcterms:title.@value", 
+                                    "o:id",
+                                    "dcterms:description.@value",
+                                    "dcterms:subject.@value",
+                                    "dcterms:coverage.@value",
+                                    "dcterms:date.@value"))
 
 massobvs_min <- minimal_stats(massobvs, c("Title.of.Collection",
                                           "Archive.Ref",
                                           "Description",
                                           "Keywords",
-                                          "County.Free.Text",
+                                          "Region",
                                           "Date.Received"))
 
 ukwa_min <- minimal_stats(ukwa, c("Title.of.Target", 
@@ -107,21 +134,21 @@ disability_dc <- dc_stats(disability, c("title",
                                         "id",
                                         "x.col"))
 
-jotpy_dc <- dc_stats(jotpy, c("dcterms:title", 
-                              "dcterms:subject", 
-                              "dcterms:description",
-                              "dcterms:type",
-                              "dcterms:source",
-                              "dcterms:relation",
-                              "dcterms:coverage",
-                              "dcterms:creator",
-                              "dcterms:publisher",
-                              "dcterms:contributor",
-                              "dcterms:rights",
-                              "dcterms:date",
-                              "dcterms:format", 
-                              "dcterms:identifier",
-                              "dcterms:language"))
+jotpy_dc <- dc_stats(jotpy_chr, c("dcterms:title.@value", 
+                              "dcterms:subject.@value", 
+                              "dcterms:description.@value",
+                              "dcterms:type.@value",
+                              "dcterms:source.@value",
+                              "dcterms:relation.@value",
+                              "dcterms:coverage.@value",
+                              "dcterms:creator.@value",
+                              "dcterms:publisher.@value",
+                              "dcterms:contributor.@value",
+                              "dcterms:rights.@value",
+                              "dcterms:date.@value",
+                              "dcterms:format.@value", 
+                              "o:id",
+                              "dcterms:language.@value"))
 
 massobvs_dc <- dc_stats(massobvs, c("Title.of.Collection",
                                     "Keywords",
