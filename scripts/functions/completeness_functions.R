@@ -119,7 +119,7 @@ dc_stats <- function(data, columns) {
   if(length(columns) == 15){ # checks that all elements are listed
     for(i in 1:15){
       stats$target_field[i] <- elements[i]
-      stats$archive_field[i] <- elements[i]
+      stats$archive_field[i] <- columns[i]
       
       # populate stats
       stats$occurences[i] <- nrow(data %>% filter(.data[[columns[[i]]]] != "" & .data[[columns[[i]]]] != "NULL" & is.na(.data[[columns[[i]]]]) == F))

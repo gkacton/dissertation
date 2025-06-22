@@ -6,7 +6,7 @@ library(tidyverse)
 
 # load data ---------------------------------------------------------------
 
-ukwa <- read.csv("~/Desktop/dissertation/csv/UKWA_Covid19Collection.csv")
+ukwa <- read.csv("data/csv/UKWA_Covid19Collection.csv")
 
 
 # basic stats -------------------------------------------------------------
@@ -20,7 +20,7 @@ colnames(ukwa)
 
 # date formatting ---------------------------------------------------------
 
-ukwa_clean <- ukwa %>% 
+ukwa_dates <- ukwa %>% 
   mutate(Date.Created = parse_date(Date.Created,
                                    format = "%d %B %Y")) %>% 
   mutate(Updated = parse_date(Updated,
@@ -35,11 +35,14 @@ ukwa_clean <- ukwa %>%
 
 # plot dates/date ranges --------------------------------------------------
 
-ggplot(data = ukwa_clean) +
+ggplot(data = ukwa_dates) +
+  geom_bar(aes(x = Updated))
+
+ggplot(data = ukwa_dates) +
   geom_bar(aes(x = Date.Created))
   ## presence of pre-2020 date indicates that this variable is creation date of sites
 
-ukwa_noNA <- ukwa_clean %>% 
+ukwa_noNA <- ukwa_dates %>% 
   filter(is.na(Crawl.Start.Date) == F & is.na(Crawl.End.Date) == F)
 
 date_ranges <- ggplot(data = ukwa_noNA) +
@@ -63,17 +66,11 @@ post_2020 <- ukwa_clean %>%
 # contains "covid"? -------------------------------------------------------
 
 ukwa_enriched <- ukwa_clean %>% 
-  mutate(Covid.Name = ifelse(grepl("covid", Primary.Seed) == T |
-                               grepl("corona", Primary.Seed) == T |
-                               grepl("Corona", Primary.Seed) == T |
-                               grepl("COVID", Primary.Seed) == T |
-                               grepl("Covid", Primary.Seed) == T |
-                               grepl("CORONA", Primary.Seed) == T |
-                               grepl("cov19", Primary.Seed) == T |
-                               grepl("Cov19", Primary.Seed) == T |
-                               grepl("COV19", Primary.Seed) == T, 
-                             T, # True value
-                             F) # False value
+  mutate(Covid.Name = ifelse(grepl(regex("covid", ignore_case = T), Primary.Seed) == T |
+                               grepl(regex("CORONA", ignore_case = T), Primary.Seed) == T |
+                               grepl(regex("cov19", ignore_case = T), Primary.Seed) == T, 
+                             yes = T, # True value
+                             no = F) # False value
   ) 
 
 for(i in 1:nrow(ukwa_enriched)){
@@ -136,12 +133,12 @@ date_ranges <- ggplot(data = covid_pages) +
 crawl_frequencies <- ukwa_clean %>% 
   group_by(Crawl.Frequency) %>% 
   count() %>% 
-  mutate(proportion = n/nrow(ukwa_clean))
+  mutate(proportion = n/nrow(ukwa_dates))
 
 
 # Total date spans ---------------------------------------------------------
 
-dates <- ukwa_clean %>% 
+date_spans <- ukwa_dates %>% 
   summarize(start = min(Crawl.Start.Date,
                         na.rm = T),
             end = max(Crawl.End.Date,
@@ -173,3 +170,26 @@ ggplot(ten_days) +
 # 462 were crawled daily, 39 crawled weekly (? what does that mean for a 10-day crawl)
 # largely government pages 
 
+
+# How long ago were sites last updated? -----------------------------------
+
+update_lag <- ukwa_dates %>% 
+  mutate(lag_to_present = dmy("22/06/2025") - Updated,
+         lag_from_start = Updated - Crawl.Start.Date)
+
+mean(update_lag$lag_to_present, na.rm=T)
+mean(update_lag$lag_from_start, na.rm=T)
+median(update_lag$lag_to_present, na.rm=T)
+median(update_lag$lag_from_start, na.rm=T)
+
+ggplot(update_lag) +
+  geom_bar(aes(x = lag_to_present))
+
+ggplot(update_lag) +
+  geom_bar(aes(x = lag_from_start)) +
+  xlim(-15, 1000)
+
+update_lag %>% 
+  group_by(lag_from_start) %>% 
+  count() %>% 
+  arrange(desc(n))

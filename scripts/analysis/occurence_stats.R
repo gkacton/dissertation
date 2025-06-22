@@ -3,41 +3,23 @@
 
 
 # load functions
-source("scripts/analysis/completeness_functions.R")
+source("scripts/functions/completeness_functions.R")
+
+# load data 
+# uncomment if needed
+
+source("scripts/analysis/data_load.R")
+
+# load packages 
 library(tidyjson)
 library(httr2)
 library(tidyverse)
 library(jsonlite)
 
 
-# Load in metadata --------------------------------------------------------
+# Additional JOTPY prep ---------------------------------------------------
 
-archive_it <- read.csv("data/csv/archive-it-C19WA.csv")
 
-ukwa <- read.csv("data/csv/UKWA_Covid19Collection.csv")
-ukwa <- ukwa %>% 
-  mutate(x.col = NA) # adds an NA column to use for any missing elements
-
-disability <- fromJSON("data/json/dis_archive_JSON.json") %>% 
-  mutate(x.col = NA) %>% 
-  filter(title != "The Covid Disability Archive") %>% 
-  # separate item IDs from titles 
-  separate_wider_position(cols = title,
-                          widths = c(id = 3, 1, title = 200),
-                          too_few = "align_start") 
-
-massobvs <- read.csv("data/csv/MassObservation.csv")
-massobvs <- massobvs %>% 
-  mutate(x.col = NA)
-
-#jotpy <- read_file("data/json/JOTPY.json") %>% fromJSON()
-### Alternative SLOW way to get the JOTPY data
-# source("scripts/scrapes/JOTPY_api.R") # takes a long time to run!
-
-jotpy <- fromJSON("data/json/jotpy_backup.json")
-
-# jotpy_MASTER <- jotpy  # BACKUP 
-# jotpy <- jotpy_MASTER
 
 jotpy_chr <- jotpy %>% 
   unnest_wider(col = starts_with("dcterms"), names_sep = ".", names_repair = "unique") %>% 
