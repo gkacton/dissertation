@@ -22,23 +22,24 @@ library(jsonlite)
 
 
 jotpy_chr <- jotpy %>% 
-  unnest_wider(col = starts_with("dcterms"), names_sep = ".", names_repair = "unique") %>% 
+  unnest_wider(col = c(starts_with("dcterms"), `oc:location`), names_sep = ".", names_repair = "unique") %>% 
   rowwise() %>% 
-  mutate(`dcterms:title.@value` = paste(unlist(`dcterms:title.@value`), collapse = ""),
-         `dcterms:identifier.@value` = paste(unlist(`dcterms:identifier.@value`), collapse = ""),
-         `dcterms:description.@value` = paste(unlist(`dcterms:description.@value`), collapse = ""),
-         `dcterms:subject.@value` = paste(unlist(`dcterms:subject.@value`), collapse = ""),
-         `dcterms:coverage.@value` = paste(unlist(`dcterms:coverage.@value`), collapse = ""),
-         `dcterms:date.@value` = paste(unlist(`dcterms:date.@value`), collapse = ""),
-         `dcterms:source.@value` = paste(unlist(`dcterms:source.@value`), collapse = ""),
-         `dcterms:relation.@value` = paste(unlist(`dcterms:relation.@value`), collapse = ""),
-         `dcterms:type.@value` = paste(unlist(`dcterms:type.@value`), collapse = ""),
-         `dcterms:creator.@value` = paste(unlist(`dcterms:creator.@value`), collapse = ""),
-         `dcterms:publisher.@value` = paste(unlist(`dcterms:publisher.@value`), collapse = ""),
-         `dcterms:contributor.@value` = paste(unlist(`dcterms:contributor.@value`), collapse = ""),
-         `dcterms:rights.@value` = paste(unlist(`dcterms:rights.@value`), collapse = ""),
-         `dcterms:format.@value` = paste(unlist(`dcterms:format.@value`), collapse = ""),
-         `dcterms:language.@value` = paste(unlist(`dcterms:language.@value`), collapse = ""))
+  mutate(`dcterms:title.@value` = paste(unlist(`dcterms:title.@value`), collapse = ","),
+         `dcterms:identifier.@value` = paste(unlist(`dcterms:identifier.@value`), collapse = ","),
+         `dcterms:description.@value` = paste(unlist(`dcterms:description.@value`), collapse = ","),
+         `dcterms:subject.@value` = paste(unlist(`dcterms:subject.@value`), collapse = ","),
+         `dcterms:coverage.@value` = paste(unlist(`dcterms:coverage.@value`), collapse = ","),
+         `dcterms:date.@value` = paste(unlist(`dcterms:date.@value`), collapse = ","),
+         `dcterms:source.@value` = paste(unlist(`dcterms:source.@value`), collapse = ","),
+         `dcterms:relation.@value` = paste(unlist(`dcterms:relation.@value`), collapse = ","),
+         `dcterms:type.@value` = paste(unlist(`dcterms:type.@value`), collapse = ","),
+         `dcterms:creator.@value` = paste(unlist(`dcterms:creator.@value`), collapse = ","),
+         `dcterms:publisher.@value` = paste(unlist(`dcterms:publisher.@value`), collapse = ","),
+         `dcterms:contributor.@value` = paste(unlist(`dcterms:contributor.@value`), collapse = ","),
+         `dcterms:rights.@value` = paste(unlist(`dcterms:rights.@value`), collapse = ","),
+         `dcterms:format.@value` = paste(unlist(`dcterms:format.@value`), collapse = ","),
+         `dcterms:language.@value` = paste(unlist(`dcterms:language.@value`), collapse = ","),
+         `oc:location.@value` = paste(unlist(`oc:location.@value`), collapse = ","))
 
 
 
@@ -62,10 +63,10 @@ disability_min <- minimal_stats(disability, c("title",
                                               "date"))
 
 jotpy_min <- minimal_stats(jotpy_chr, c("dcterms:title.@value", 
-                                    "o:id",
+                                    "dcterms:identifier.@value",
                                     "dcterms:description.@value",
                                     "dcterms:subject.@value",
-                                    "dcterms:coverage.@value",
+                                    "oc:location.@value",
                                     "dcterms:date.@value"))
 
 massobvs_min <- minimal_stats(massobvs, c("Title.of.Collection",
@@ -129,7 +130,7 @@ jotpy_dc <- dc_stats(jotpy_chr, c("dcterms:title.@value",
                               "dcterms:rights.@value",
                               "dcterms:date.@value",
                               "dcterms:format.@value", 
-                              "o:id",
+                              "dcterms:identifier.@value",
                               "dcterms:language.@value"))
 
 massobvs_dc <- dc_stats(massobvs, c("Title.of.Collection",

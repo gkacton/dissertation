@@ -157,11 +157,11 @@ jotpy_subject_stats <- jotpy_subject_connections %>%
             n_terms = n(),
             total_records = sum(n_records))
 
-ggplot(jotpy_subject_connections, aes(x = length_subject, y = n_records)) +
-  geom_point(aes(color = source)) +
-  geom_smooth(method = "lm", color = "black") +
-  facet_grid(cols = vars(source))
-
+ggplot(jotpy_subject_connections) +
+  geom_col(aes(x = source, y = n_records, fill = source)) +
+  scale_fill_manual(values = c("conVoc" = "#eefda6",
+                               "folksonomy" = "#6e8011")) +
+  theme_minimal()
 
 
 # record graph ------------------------------------------------------------
@@ -189,3 +189,77 @@ jotpy_edge_stats <- graph %>%
 jotpy_edges <- edges %>% 
   group_by(from, from_txt, to, to_txt) %>% 
   summarize(count = n())
+
+# -------------------------------------------------------------------------
+# Basic analysis ----------------------------------------------------------
+
+
+# summary stats - Descriptions -----------------------------------------------------------
+
+JOTPY_desc_stats <- jotpy %>% 
+  select(`dcterms:descriptions.@value`) %>% 
+  rowwise() %>% 
+  mutate(desc_length = nchar(`dcterms:descriptions.@value`))
+
+mean(JOTPY_desc_stats$desc_length, na.rm = T)
+median(JOTPY_desc_stats$desc_length, na.rm = T)
+
+
+# summary stats - Subjects ------------------------------------------------
+
+JOTPY_subj_stats <- jotpy %>% 
+  select(`@id`, `dcterms:subject`, `foaf:topic_interest`) %>% 
+  unnest_wider(col = c(`dcterms:subject`, `foaf:topic_interest`),
+               names_sep = ".",
+               names_repair = "unique") %>% 
+  rowwise() %>% 
+  mutate(n_subj_dc = length(`dcterms:subject.@value`),
+         n_subj_folk = length(`foaf:topic_interest.@value`)) %>% 
+  mutate(n_subj_total = n_subj_dc + n_subj_folk)
+
+mean(JOTPY_subj_stats$n_subj, na.rm = T)
+median(JOTPY_subj_stats$n_subj, na.rm = T)
+
+# text analysis -----------------------------------------------------------
+
+JOTPY_TA <- JOTPY_desc_stats %>% 
+  unnest_tokens(output = word, input = Description) %>% 
+  group_by(word) %>% 
+  summarize(count = n()) %>% 
+  arrange(desc(count)) %>% 
+  anti_join(get_stopwords())
+
+
+# unique subjects ---------------------------------------------------------
+
+JOTPY_subj_unique <- JOTPY_subj_stats %>% 
+  select(subjects) %>% 
+  unnest_longer(col = subjects) %>% 
+  group_by(subjects) %>% 
+  summarize(count = n()) %>% 
+  arrange(desc(count))
+
+# seaparate faceted terms
+
+JOTPY_subj_faceted_unue <- JOTPY_subj_stats %>% 
+  select(subjects) %>% 
+  unnest_longer(col = subjects) %>% 
+  separate_longer_delim(cols = subjects,
+                        delim = "--") %>% 
+  group_by(tolower(subjects)) %>% 
+  summarize(count = n()) %>% 
+  arrange(desc(count))
+
+
+# folksonomy length stats -------------------------------------------------
+
+folksonomy_lengths <- folksonomy %>% 
+  mutate(length = nchar(term))
+
+mean(folksonomy_lengths$length, na.rm = T)
+median(folksonomy_lengths$length, na.rm = T)
+
+
+# conVoc length stats -----------------------------------------------------
+
+
