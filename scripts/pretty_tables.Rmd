@@ -1,0 +1,76 @@
+```{r}
+# setwd("~/Desktop/covid/")
+# source("scripts/analysis/occurence_stats.R")
+```
+
+```{r arc-it-UKWA}
+
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+
+rbind(ukwa_dc_prev,
+                 archive_it_dc_prev) %>% 
+  relocate(archive, .before = title) %>% 
+  mutate(across(title:language, ~round(., digits = 3))) %>% 
+  mutate(across(title:language, ~cell_spec(.x, "html", background = if_else(.x == 0, "#fff98c", "")))) %>% 
+  kable(escape = F, "html") %>% 
+  kable_styling(c("striped", "condensed"),
+                html_font = "Courier New") %>% 
+  add_header_above(c(" " = 1, "Metadata Elements" = 15))
+```
+```{r archive-it-tables}
+archive_it_dc %>% 
+  mutate(prevalence = round(prevalence, digits = 3),
+         pct_unique = round(pct_unique, digits = 3)) %>% 
+  kable(escape = F, 
+        "html",
+        col.names = c("Target Field",
+                      "Archive Field",
+                      "Occurences",
+                      "Prevalence",
+                      "Unique Values",
+                      "Percent Unique")) %>% 
+  kable_styling(c("striped", "condensed"),
+                html_font = "Courier New")
+
+org_min_prev_stats %>% 
+  relocate(org_type, .before = title) %>% 
+  mutate(across(title:temporal, ~round(., digits = 3))) %>% 
+  mutate(across(title:temporal, ~cell_spec(.x, "html", background = if_else(.x == 0, "#fff98c", " ")))) %>% 
+  kable(escape = F, 
+        "html",
+        col.names = c("Organization Type",
+                      "Title",
+                      "Identifier",
+                      "Description",
+                      "Subject", 
+                      "Geographic",
+                      "Temporal",
+                      "Average Score")) %>% 
+  kable_styling(c("striped", "condensed"),
+                html_font = "Courier New") %>% 
+  add_header_above(c(" " = 1, "Metadata Elements" = 6, " " = 1)) %>% 
+  column_spec(8,
+              background = "#ffe6a8")
+```
+
+```{r ukwa-tables}
+ukwa_dc %>% 
+  mutate(prevalence = round(prevalence, digits = 3),
+         pct_unique = round(pct_unique, digits = 3)) %>% 
+  mutate(across(occurences:pct_unique, ~cell_spec(.x, "html", background = if_else(.x == 0 | is.na(.x) == T, "#fff98c", " ")))) %>% 
+  mutate(archive_field = if_else(archive_field == "x.col", "NA", archive_field)) %>% 
+  kable(escape = F, 
+        "html",
+        col.names = c("Target Field",
+                      "Archive Field",
+                      "Occurences",
+                      "Prevalence",
+                      "Unique Values",
+                      "Percent Unique")) %>% 
+  kable_styling(c("striped", "condensed"),
+                html_font = "Courier New")
+```
+
+
