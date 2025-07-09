@@ -4,10 +4,6 @@
 library(tidyverse)
 
 
-# load data ---------------------------------------------------------------
-
-ukwa <- read.csv("~/Desktop/dissertation/csv/UKWA_Covid19Collection.csv")
-
 
 # basic stats -------------------------------------------------------------
 
@@ -163,3 +159,18 @@ ggplot(ten_days) +
 # 462 were crawled daily, 39 crawled weekly (? what does that mean for a 10-day crawl)
 # largely government pages 
 
+
+# top-level domains -------------------------------------------------------
+
+library(urltools)
+
+ukwa_urls <- suffix_extract(domain(ukwa$Primary.Seed))
+
+ukwa_url_parse <- url_parse(ukwa$Primary.Seed)
+
+suffix_counts <- ukwa_urls %>% 
+  group_by(suffix) %>% 
+  count() %>% 
+  mutate(proportion = n/4656) %>% 
+  arrange(desc(proportion))
+  

@@ -175,12 +175,54 @@ ggplot(ten_days) +
 
 update_lag <- ukwa_dates %>% 
   mutate(lag_to_present = dmy("22/06/2025") - Updated,
-         lag_from_start = Updated - Crawl.Start.Date)
+         lag_from_start = Updated - Crawl.Start.Date,
+         lag_to_end = Crawl.End.Date - Updated) %>% 
+  filter(Crawl.Frequency != "DOMAINCRAWL")
 
 mean(update_lag$lag_to_present, na.rm=T)
 mean(update_lag$lag_from_start, na.rm=T)
+mean(update_lag$lag_to_end, na.rm=T)
 median(update_lag$lag_to_present, na.rm=T)
 median(update_lag$lag_from_start, na.rm=T)
+median(update_lag$lag_to_end, na.rm=T)
+
+lags <- update_lag %>% 
+  filter(Crawl.Frequency != "DOMAINCRAWL") %>% 
+  group_by(lag_from_start) %>% 
+  count() %>% 
+  arrange(desc(n))
+
+before_crawl <- update_lag %>% 
+  filter(lag_from_start < 0)
+
+lag_by_frequency <- update_lag %>% 
+  group_by(Crawl.Frequency) %>% 
+  summarize(avg_lag = mean(lag_from_start, na.rm = T),
+            med_lag = median(lag_from_start, na.rm = T), 
+            min_lag = min(lag_from_start, na.rm = T),
+            max_lag = max(lag_from_start, na.rm = T))
+
+end_lag_by_frequency <- update_lag %>% 
+  group_by(Crawl.Frequency) %>% 
+  summarize(avg_lag = mean(lag_to_end, na.rm = T),
+            med_lag = median(lag_to_end, na.rm = T), 
+            min_lag = min(lag_to_end, na.rm = T),
+            max_lag = max(lag_to_end, na.rm = T))
+
+ggplot(update_lag) +
+  geom_boxplot(aes(lag_from_start, Crawl.Frequency)) +
+  theme_minimal() +
+  xlab("Time from Crawl Start to Last Record Update") +
+  ylab("Crawl Frequency") +
+  theme(text = element_text(family = "Courier New")) 
+
+ggplot(update_lag) +
+  geom_boxplot(aes(lag_to_end, Crawl.Frequency)) +
+  theme_minimal() +
+  xlab("Time from Last Record Update to Crawl End") +
+  ylab("Crawl Frequency") +
+  theme(text = element_text(family = "Courier New")) +
+  geom_vline(xintercept = 0, color = "#5e94d6")
 
 ggplot(update_lag) +
   geom_bar(aes(x = lag_to_present))
@@ -193,3 +235,41 @@ update_lag %>%
   group_by(lag_from_start) %>% 
   count() %>% 
   arrange(desc(n))
+
+
+# Updated since crawl start by domain -------------------------------------
+
+ukwa_domains <- ukwa_dates %>% 
+  mutate(domain = domain(Primary.Seed)) %>% 
+  mutate(suffix = suffix_extract(domain)) %>% 
+  mutate(updated_since_crawl_start = if_else(Updated > Crawl.Start.Date, T, F),
+         updated_since_crawl_end = if_else(Updated > Crawl.End.Date, T, F)) %>% 
+  group_by(suffix) %>% 
+  mutate(Crawl.Frequency = factor(Crawl.Frequency, levels = c("DOMAINCRAWL", "ANNUAL", "SIXMONTHLY", "QUARTERLY", "MONTHLY", "WEEKLY", "DAILY"))) %>% 
+  mutate(crawl_duration = Crawl.End.Date - Crawl.Start.Date)
+
+ggplot(ukwa_domains) +
+  geom_bar(aes(x = suffix$suffix, fill = updated_since_crawl_start))
+
+ggplot(ukwa_domains) +
+  geom_bar(aes(x = Crawl.Frequency, fill = updated_since_crawl_start)) +
+  scale_fill_manual(values = c("FALSE" = "#cde1fa",
+                               "TRUE" = "#0979b3"),
+                    na.value = "grey70") +
+  theme_minimal() +
+  theme(text = element_text(family = "Courier New")) +
+  labs(fill = "Updated since crawl start?",
+       x = "Crawl Frequency")
+  
+ggplot(ukwa_domains) +
+  geom_histogram(aes(x = crawl_duration, fill = updated_since_crawl_start), origin = 0, binwidth = 365) +
+  scale_fill_manual(values = c("FALSE" = "#cde1fa",
+                               "TRUE" = "#0979b3"),
+                    na.value = "grey70") +
+  theme_minimal() +
+  theme(text = element_text(family = "Courier New"))
+
+ukwa_domains %>% 
+  group_by(updated_since_crawl_start, Crawl.Frequency) %>% 
+  summarize(mean_duration = mean(crawl_duration, na.rm = T),
+            count = n()) 

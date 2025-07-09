@@ -3,12 +3,12 @@
 
 
 # load functions
-source("scripts/functions/completeness_functions.R")
+source("~/Desktop/covid/scripts/functions/completeness_functions.R")
 
 # load data 
 # uncomment if needed
 
-source("scripts/analysis/data_load.R")
+source("~/Desktop/covid/scripts/analysis/data_load.R")
 
 # load packages 
 library(tidyjson)

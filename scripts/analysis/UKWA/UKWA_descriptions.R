@@ -42,6 +42,23 @@ UKWA_TA <- UKWA_desc_stats %>%
   arrange(desc(count)) %>% 
   anti_join(get_stopwords())
 
+ukwa_covid_descs <- ukwa %>% 
+  mutate(contains_cov = ifelse(str_detect(Description, regex("covid", ignore_case = T)) | str_detect(Description, regex("corona", ignore_case = T)),
+                               T,
+                               F),
+         pandemic = ifelse(str_detect(Description, regex("pandemic", ignore_case = T)) | str_detect(Description, regex("epidemic", ignore_case = T)),
+                           T,
+                           F),
+         lockdown = ifelse(str_detect(Description, regex("lockdown", ignore_case = T)) | str_detect(Description, regex("quarantine", ignore_case = T)),
+                           T,
+                           F),
+         domain_cov = ifelse(str_detect(Primary.Seed, regex("covid", ignore_case = T)) | str_detect(Primary.Seed, regex("corona", ignore_case = T)),
+                             T,
+                             F)) 
+
+ukwa_covid_descs %>% 
+  group_by(contains_cov, domain_cov) %>% 
+  count()
 
 # unique subjects ---------------------------------------------------------
 
@@ -66,7 +83,7 @@ UKWA_subj_faceted_unue <- UKWA_subj_stats %>%
 
 # missing descriptions ----------------------------------------------------
 
-no_desc <- ukwa_dates %>% 
+no_desc <- ukwa_domains %>% 
   filter(Description == "")
 
 desc_frequencies <- no_desc %>% 
@@ -74,10 +91,21 @@ desc_frequencies <- no_desc %>%
   count()
 
 ggplot(no_desc) +
-  geom_bar(aes(x = Crawl.Start.Date), fill= "#5e94d6") +
+  geom_histogram(aes(x = Crawl.Start.Date, fill = updated_since_crawl_start), origin = dmy("01-01-2020"), binwidth = 30) +
+  scale_fill_manual(values = c("FALSE" = "#cde1fa",
+                               "TRUE" = "#0979b3"),
+                    na.value = "grey70") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90)) +
-  xlim(dmy("01-01-2018"), dmy("01-01-2025"))
+  xlim(dmy("01-01-2018"), dmy("01-01-2024")) +
+  labs(x = "Crawl Start Date",
+       y = "Count",
+       title = "Records Missing Description Element",
+       subtitle = "Counts by crawl start date",
+       fill = "Record Updated") +
+  theme(text = element_text(family = "Courier New"),
+        title = element_text(face = "bold")) +
+  geom_vline(xintercept = dmy("01-03-2020"), size = 0.7, color = "#e037b0")
 
 crawl_frequencies <- ukwa %>% 
   mutate(has_desc = ifelse(Description == "", F, T)) %>% 
