@@ -208,7 +208,7 @@ median(JOTPY_desc_stats$desc_length, na.rm = T)
 # summary stats - Subjects ------------------------------------------------
 
 JOTPY_subj_stats <- jotpy %>% 
-  select(`@id`, `dcterms:subject`, `foaf:topic_interest`) %>% 
+  select(`@id`, `dcterms:subject`, `foaf:topic_interest`, `o:id`) %>% 
   unnest_wider(col = c(`dcterms:subject`, `foaf:topic_interest`),
                names_sep = ".",
                names_repair = "unique") %>% 

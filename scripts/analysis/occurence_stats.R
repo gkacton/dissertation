@@ -63,7 +63,7 @@ disability_min <- minimal_stats(disability, c("title",
                                               "date"))
 
 jotpy_min <- minimal_stats(jotpy_chr, c("dcterms:title.@value", 
-                                    "dcterms:identifier.@value",
+                                    "o:id",
                                     "dcterms:description.@value",
                                     "dcterms:subject.@value",
                                     "oc:location.@value",
@@ -130,7 +130,7 @@ jotpy_dc <- dc_stats(jotpy_chr, c("dcterms:title.@value",
                               "dcterms:rights.@value",
                               "dcterms:date.@value",
                               "dcterms:format.@value", 
-                              "dcterms:identifier.@value",
+                              "o:id",
                               "dcterms:language.@value"))
 
 massobvs_dc <- dc_stats(massobvs, c("Title.of.Collection",
