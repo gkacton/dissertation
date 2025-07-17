@@ -1576,6 +1576,400 @@ NA
 </tr>
 </tbody>
 </table>
+<pre class="r"><code>subjects %&gt;% 
+  kable(escape = F, 
+        &quot;html&quot;,
+        col.names = c(&quot;Subject&quot;,
+                      &quot;Count&quot;)) %&gt;% 
+  kable_styling(c(&quot;striped&quot;, &quot;condensed&quot;),
+                html_font = &quot;Courier New&quot;,
+                full_width = F)</code></pre>
+<table class="table table-striped table-condensed" style="font-family: Courier New; width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Subject
+</th>
+<th style="text-align:right;">
+Count
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+media-and-arts
+</td>
+<td style="text-align:right;">
+50
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+home-family
+</td>
+<td style="text-align:right;">
+36
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+activism-and-accessibility
+</td>
+<td style="text-align:right;">
+19
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+health-and-science
+</td>
+<td style="text-align:right;">
+13
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+government-and-politics
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+work-and-welfare
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>jotpy_namespace_counts %&gt;% 
+  arrange(desc(n)) %&gt;% 
+  kable(escape = F, 
+        &quot;html&quot;,
+        col.names = c(&quot;Namespace&quot;,
+                      &quot;Count&quot;)) %&gt;% 
+  kable_styling(c(&quot;striped&quot;, &quot;condensed&quot;),
+                html_font = &quot;Courier New&quot;,
+                full_width = F)</code></pre>
+<table class="table table-striped table-condensed" style="font-family: Courier New; width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Namespace
+</th>
+<th style="text-align:right;">
+Count
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+dcterms
+</td>
+<td style="text-align:right;">
+31
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+oc
+</td>
+<td style="text-align:right;">
+17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+o
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+bibo
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+foaf
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+o-module-folksonomy
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+o-module-mapping
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>jotpy_dc %&gt;% 
+  select(-unique, -pct_unique) %&gt;% 
+  kable(escape = F, 
+        &quot;html&quot;) %&gt;% 
+  kable_styling(c(&quot;striped&quot;, &quot;condensed&quot;),
+                html_font = &quot;Courier New&quot;,
+                full_width = F)</code></pre>
+<table class="table table-striped table-condensed" style="font-family: Courier New; width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+target_field
+</th>
+<th style="text-align:left;">
+archive_field
+</th>
+<th style="text-align:right;">
+occurences
+</th>
+<th style="text-align:right;">
+prevalence
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+title
+</td>
+<td style="text-align:left;">
+dcterms:title.@value
+</td>
+<td style="text-align:right;">
+17546
+</td>
+<td style="text-align:right;">
+0.9997151
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+subject
+</td>
+<td style="text-align:left;">
+dcterms:subject.@value
+</td>
+<td style="text-align:right;">
+17548
+</td>
+<td style="text-align:right;">
+0.9998291
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+description
+</td>
+<td style="text-align:left;">
+dcterms:description.@value
+</td>
+<td style="text-align:right;">
+17487
+</td>
+<td style="text-align:right;">
+0.9963535
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+type
+</td>
+<td style="text-align:left;">
+dcterms:type.@value
+</td>
+<td style="text-align:right;">
+16291
+</td>
+<td style="text-align:right;">
+0.9282092
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+source
+</td>
+<td style="text-align:left;">
+dcterms:source.@value
+</td>
+<td style="text-align:right;">
+1252
+</td>
+<td style="text-align:right;">
+0.0713350
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+relation
+</td>
+<td style="text-align:left;">
+dcterms:relation.@value
+</td>
+<td style="text-align:right;">
+30
+</td>
+<td style="text-align:right;">
+0.0017093
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+coverage
+</td>
+<td style="text-align:left;">
+dcterms:coverage.@value
+</td>
+<td style="text-align:right;">
+107
+</td>
+<td style="text-align:right;">
+0.0060965
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+creator
+</td>
+<td style="text-align:left;">
+dcterms:creator.@value
+</td>
+<td style="text-align:right;">
+15879
+</td>
+<td style="text-align:right;">
+0.9047348
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+publisher
+</td>
+<td style="text-align:left;">
+dcterms:publisher.@value
+</td>
+<td style="text-align:right;">
+3886
+</td>
+<td style="text-align:right;">
+0.2214119
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+contributor
+</td>
+<td style="text-align:left;">
+dcterms:contributor.@value
+</td>
+<td style="text-align:right;">
+14975
+</td>
+<td style="text-align:right;">
+0.8532277
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rights
+</td>
+<td style="text-align:left;">
+dcterms:rights.@value
+</td>
+<td style="text-align:right;">
+17551
+</td>
+<td style="text-align:right;">
+1.0000000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+date
+</td>
+<td style="text-align:left;">
+dcterms:date.@value
+</td>
+<td style="text-align:right;">
+17539
+</td>
+<td style="text-align:right;">
+0.9993163
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+format
+</td>
+<td style="text-align:left;">
+dcterms:format.@value
+</td>
+<td style="text-align:right;">
+1031
+</td>
+<td style="text-align:right;">
+0.0587431
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+identifier
+</td>
+<td style="text-align:left;">
+o:id
+</td>
+<td style="text-align:right;">
+17550
+</td>
+<td style="text-align:right;">
+0.9999430
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+language
+</td>
+<td style="text-align:left;">
+dcterms:language.@value
+</td>
+<td style="text-align:right;">
+1169
+</td>
+<td style="text-align:right;">
+0.0666059
+</td>
+</tr>
+</tbody>
+</table>
 
 
 

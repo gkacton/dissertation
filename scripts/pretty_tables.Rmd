@@ -73,4 +73,35 @@ ukwa_dc %>%
                 html_font = "Courier New")
 ```
 
+```{r disability-table}
+subjects %>% 
+  kable(escape = F, 
+        "html",
+        col.names = c("Subject",
+                      "Count")) %>% 
+  kable_styling(c("striped", "condensed"),
+                html_font = "Courier New",
+                full_width = F)
+```
+
+```{r jotpy-tables}
+jotpy_namespace_counts %>% 
+  arrange(desc(n)) %>% 
+  kable(escape = F, 
+        "html",
+        col.names = c("Namespace",
+                      "Count")) %>% 
+  kable_styling(c("striped", "condensed"),
+                html_font = "Courier New",
+                full_width = F)
+
+jotpy_dc %>% 
+  select(-unique, -pct_unique) %>% 
+  kable(escape = F, 
+        "html") %>% 
+  kable_styling(c("striped", "condensed"),
+                html_font = "Courier New",
+                full_width = F)
+
+```
 
