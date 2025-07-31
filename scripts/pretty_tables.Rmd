@@ -17,7 +17,7 @@ rbind(ukwa_dc_prev,
   kable(escape = F, "html") %>% 
   kable_styling(c("striped", "condensed"),
                 html_font = "Courier New") %>% 
-  add_header_above(c(" " = 1, "Metadata Elements" = 15))
+  add_header_above(c(" " = 1, "Metadata Elements" = 15)) 
 ```
 ```{r archive-it-tables}
 archive_it_dc %>% 

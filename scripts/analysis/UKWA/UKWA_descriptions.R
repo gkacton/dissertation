@@ -99,12 +99,16 @@ ggplot(no_desc) +
   theme(axis.text.x = element_text(angle = 90)) +
   xlim(dmy("01-01-2018"), dmy("01-01-2024")) +
   labs(x = "Crawl Start Date",
-       y = "Count",
+       y = "Number of Sites",
        title = "Records Missing Description Element",
        subtitle = "Counts by crawl start date",
-       fill = "Record Updated") +
+       fill = "") +
   theme(text = element_text(family = "Courier New"),
-        title = element_text(face = "bold")) +
+        title = element_text(face = "bold",
+                             size = 22), 
+        axis.title = element_text(size = 22,
+                                  face = "plain"),
+        axis.text = element_text(size = 18)) +
   geom_vline(xintercept = dmy("01-03-2020"), size = 0.7, color = "#e037b0")
 
 crawl_frequencies <- ukwa %>% 

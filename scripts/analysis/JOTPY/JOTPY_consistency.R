@@ -127,7 +127,12 @@ ggplot(jotpy_dates_subj_type) +
   scale_fill_manual(values = c("conVoc" = "#cde1fa",
                                "folk" = "#eefda6")) +
   xlim(mdy("01-01-2020"), mdy("01-01-2025")) +
-  ylim(0, 10)
+  ylim(0, 8) +
+  theme(text = element_text(family = "Courier New"),
+        axis.title = element_text(size = 22),
+        axis.text = element_text(size = 18)) +
+  labs(x = "Date",
+       y = "Average number of subjects per item") 
 
 
 # modifications -----------------------------------------------------------

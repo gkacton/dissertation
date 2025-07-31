@@ -212,8 +212,11 @@ ggplot(massobvs_fac) +
                                "TRUE" = "#e037b0")) +
   theme_minimal() +
   labs(x = "Type of submission",
-       fill = "Includes description?") +
-  theme(text = element_text(family = "Courier New"))
+       fill = "Includes description?",
+       y = "Number of Records") +
+  theme(text = element_text(family = "Courier New"),
+        axis.title = element_text(size = 22),
+        axis.text = element_text(size = 18))
 
 ggplot(massobvs_fac) +
   geom_bar(aes(x = n_subj, fill = sub_type))
@@ -302,3 +305,22 @@ MO_sub_types_dc <- rbind(may12_dc_prev,
                          directive_dc_prev,
                          open_call_dc_prev)
 
+
+# n submissions by observers ----------------------------------------------
+
+n_subs_dir <- directive %>% 
+  mutate(Participant.s.Year.of.birth = as.numeric(Participant.s.Year.of.birth),
+         age_2022 = if_else(is.na(Participant.s.Year.of.birth), NA, 2022 - Participant.s.Year.of.birth)) %>% 
+  group_by(P.id) %>% 
+  summarize(age_2022 = median(age_2022),
+            year_joined = median(Year.Participant.joined),
+            n = n()) 
+
+mean(n_subs_dir$n) 
+median(n_subs_dir$n)
+
+mean(n_subs_dir$age_2022, na.rm = T)
+median(n_subs_dir$age_2022, na.rm = T)
+
+mean(n_subs_dir$year_joined, na.rm = T)
+median(n_subs_dir$year_joined, na.rm = T)

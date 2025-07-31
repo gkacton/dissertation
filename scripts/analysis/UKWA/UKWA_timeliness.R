@@ -212,9 +212,11 @@ end_lag_by_frequency <- update_lag %>%
 ggplot(update_lag) +
   geom_boxplot(aes(lag_from_start, Crawl.Frequency)) +
   theme_minimal() +
-  xlab("Time from Crawl Start to Last Record Update") +
+  xlab("Time from Crawl Start to Last Record Update (days)") +
   ylab("Crawl Frequency") +
-  theme(text = element_text(family = "Courier New")) 
+  theme(text = element_text(family = "Courier New"), 
+        axis.title = element_text(size = 22),
+        axis.text = element_text(size = 18)) 
 
 ggplot(update_lag) +
   geom_boxplot(aes(lag_to_end, Crawl.Frequency)) +
@@ -257,9 +259,12 @@ ggplot(ukwa_domains) +
                                "TRUE" = "#0979b3"),
                     na.value = "grey70") +
   theme_minimal() +
-  theme(text = element_text(family = "Courier New")) +
-  labs(fill = "Updated since crawl start?",
-       x = "Crawl Frequency")
+  theme(text = element_text(family = "Courier New"),
+        axis.title = element_text(size = 22),
+        axis.text = element_text(size = 18)) +
+  labs(fill = "Record Updated?",
+       x = "Crawl Frequency",
+       y = "Number of Sites")
   
 ggplot(ukwa_domains) +
   geom_histogram(aes(x = crawl_duration, fill = updated_since_crawl_start), origin = 0, binwidth = 365) +
