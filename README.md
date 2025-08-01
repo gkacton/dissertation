@@ -1,33 +1,34 @@
 # dissertation
 
-This repository contains all of the files related to my 2025 Master's dissertation, _Observations or Memorials of the Most Remarkable Occurrences: Evaluating Digital Archives of the COVID-19 Pandemic_.
+This repository contains all of the data and code related to my 2025 dissertation, _Unprecendented Times, Unexpected Opportunities: Evaluating Metadata Quality and Community Engagement in Digital Archives of the COVID-19 Pandemic_, submitted in partial fulfillment of the requirements of the degree of Masters of Arts in Digital Humanities at Lancaster University. 
 
 ## Directories
 
-### `csv`
+### data
+Divided by file type, with `.csv` and  `.json` files in separate folders. 
 
-Contains datasets in `.csv` format. 
+Some data files were too large to upload to GitHub -- specifically, the metadata data for the Journal of the Plague Year (JOTPY), which contains over 17,000 items, was unable to be uploaded. The code used to access the data via the JOTPY Omeka API is found [here](https://github.com/gkacton/dissertation/blob/main/scripts/scrapes/jotpy_api.R). 
 
-*Contents:*
+Because JOTPY is such a large archive, other related data, including a reconciliation against the Library of Congress Subject Headings, are also too large to be shared here. If you would like these files, please contact me directly. 
 
-* `SAA_COVID19_WebArchives.csv`: Collection-level metadata of COVID-19 digital archives submitted to the Society of American Archivists web archiving section. These descriptions are written by archivists, for archivists. Data downloaded from SAA Web Archiving Section blog.
-* `UKWA_Covid19Collection.csv`: Metadata for all domains archived by the UK Web Archive as part of their COVID-19 collection. Somewhere between collection- and item-level metadata, because seed domains can represent a _collection_ of pages. Data provided by Carlos Lelkes-Rarugal, Assistant Web Archivist for the UKWA.
+Metadata for the UK Web Archive Coronavirus Collection was provided in `.csv` format, via email, by Carlos Lelkes-Rarugal, Assistant Web Archivist at the British Library. 
 
-### `json`
+### scripts
+  #### functions 
+  Contains R files for functions I created for use in my analyses.
+  #### analysis
+  Contains R files for the complete evaluations of each sample archive. These analyses are divided into folders by archive, with the exception of scripts which compare multiple archives or are required to be run during evaluations of more than one archive.
+  #### scrapes
+  Contains R files used to web scrape the COVID Disability Archive, Archive-It, and JOTPY. Also contains an experiment in scraping an archived version of the UK Web Archive, hosted on the Internet Archive, which was ultimately rendered obsolete when the UKWA Coronavirus Collection metadata was shared with me directly. 
 
-Contains datasets in `.JSON` format, particularly those which require a column to contain a list (of subjects, tags, etc.).
+  The [PrettyTables](https://github.com/gkacton/dissertation/blob/main/scripts/pretty_tables.Rmd) notebook does **not** run independently, as it was only used to render some individual tables after each archive's analysis was complete. 
 
-*Contents:*
+### C19WA
+HTML files for each page of the Archive-It COVID-19 Web Archive. These were gathered from the site using Google Chrome's "Inspect" view. 
 
-* `archive_it_JSON.json`: Collection-level metadata of publicly-available digital archives created using Archive-It and tagged by Archive-It as being related to COVID-19. Collected via web scraping.
-* `dis_archive_JSON.json`: Item-level metadata of entries in the COVID-19 Disability Archive. Collected via web scraping. 
+### renv
+The R virtual environment within which all scripts were run. 
 
-### `scripts`
+## Other Files
 
-Contains all R scripts for web scraping and data processing.
-
-*Contents:*
-
-* `archive_it_scrape.R`: Script used to scrape collection-level metadata from Archive-It collections.
-* `disability_archive_scrape.R`: Script used to scrape item-level metadata from the [COVID Disability Archive](https://coviddisabilityarchive.com/archive/). 
-* `ukwa_analysis.R`: Script used for analysis of UKWA data, including visualizations.  
+- The [Readable Analysis](https://github.com/gkacton/dissertation/blob/main/Analysis_Readable.Rmd) notebook contains my early experiments in applying the Bruce and Hillman Metadata Quality Framework programmatically. It does not represent the final form of my analyses -- these are contained in the `scripts/analysis` directory. 
